@@ -9,7 +9,7 @@ class Player():
         self.points = ''
         self.pos = ''
 
-driver = webdriver.Chrome(executable_path='/Users/beaugrimmel/Documents/fantasy-football-webscraper/chromedriver')
+driver = webdriver.Chrome(executable_path='/Users/beaugrimmel/Documents/GitHub/fantasy-football-webscraper/chromedriver')
 driver.get('https://sleeper.app/login')
 
 # Find and input username
