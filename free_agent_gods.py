@@ -7,6 +7,7 @@ class Player():
     def __init__(self):
         self.name = ''
         self.points = ''
+        self.proj = ''
         self.pos = ''
 
 driver = webdriver.Chrome(executable_path='/Users/beaugrimmel/Documents/GitHub/fantasy-football-webscraper/chromedriver')
@@ -38,9 +39,18 @@ week_dropdown.click()
 
 # Select the week your looking for
 time.sleep(.25)
-week = 11
+week = 13
 week_dropdown = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[2]/div[2]/div[2]/div[2]/div[{}]'.format(week + 1))
 week_dropdown.click()
+
+# Select Projection or Stats
+time.sleep(.25)
+Projection = True
+if Projection:
+    stat_type_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[1]/div[2]/div[{}]'.format(1))
+else:
+    stat_type_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[1]/div[2]/div[{}]'.format(2))
+stat_type_button.click()
 
 # Hide owned players
 time.sleep(.25)
@@ -49,6 +59,7 @@ hide_owned.click()
 
 top_player_name =  '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[2]/div[2]/div[1]'
 top_player_points = '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[6]'
+top_player_proj = '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[5]'
 top_player_pos = '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[2]/div[3]/div[1]'
 
 # Select QB
@@ -60,9 +71,11 @@ qb = Player()
 
 top_name = driver.find_element(By.XPATH, top_player_name.format(1))
 top_points = driver.find_element(By.XPATH, top_player_points.format(1))
+top_proj = driver.find_element(By.XPATH, top_player_proj.format(1))
 top_pos = driver.find_element(By.XPATH, top_player_pos.format(1))
 qb.name = top_name.text
 qb.points = top_points.text
+qb.proj = top_proj.text
 qb.pos = top_pos.text
 
 # Select RB
@@ -77,10 +90,12 @@ for x in range(2):
 for count,rb in enumerate(rbs):
     top_name = driver.find_element(By.XPATH, top_player_name.format(count + 1))
     top_points = driver.find_element(By.XPATH, top_player_points.format(count + 1))
+    top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
     top_pos = driver.find_element(By.XPATH, top_player_pos.format(count + 1))
     rb.name = top_name.text
     rb.points = top_points.text
-    rb.pos = top_pos.text 
+    rb.proj = top_proj.text
+    rb.pos = top_pos.text
 
 # Select WR
 time.sleep(.25)
@@ -94,9 +109,11 @@ for x in range(2):
 for count,wr in enumerate(wrs):
     top_name = driver.find_element(By.XPATH, top_player_name.format(count + 1))
     top_points = driver.find_element(By.XPATH, top_player_points.format(count + 1))
+    top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
     top_pos = driver.find_element(By.XPATH, top_player_pos.format(count + 1))
     wr.name = top_name.text
     wr.points = top_points.text
+    wr.proj = top_proj.text
     wr.pos = top_pos.text 
 
 # Select TE
@@ -108,9 +125,11 @@ te = Player()
 
 top_name = driver.find_element(By.XPATH, top_player_name.format(1))
 top_points = driver.find_element(By.XPATH, top_player_points.format(1))
+top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
 top_pos = driver.find_element(By.XPATH, top_player_pos.format(1))
 te.name = top_name.text
 te.points = top_points.text
+te.proj = top_proj.text
 te.pos = top_pos.text
 
 # Select K
@@ -122,9 +141,11 @@ k = Player()
 
 top_name = driver.find_element(By.XPATH, top_player_name.format(1))
 top_points = driver.find_element(By.XPATH, top_player_points.format(1))
+top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
 top_pos = driver.find_element(By.XPATH, top_player_pos.format(1))
 k.name = top_name.text
 k.points = top_points.text
+k.proj = top_proj.text
 k.pos = top_pos.text
 
 # Select D
@@ -136,9 +157,11 @@ d = Player()
 
 top_name = driver.find_element(By.XPATH, top_player_name.format(1))
 top_points = driver.find_element(By.XPATH, top_player_points.format(1))
+top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
 top_pos = driver.find_element(By.XPATH, top_player_pos.format(1))
 d.name = top_name.text
 d.points = top_points.text
+d.proj = top_proj.text
 d.pos = top_pos.text
 
 # Select Flex
@@ -157,9 +180,11 @@ for x in range(7):
 for count,f in enumerate(fs):
     top_name = driver.find_element(By.XPATH, top_player_name.format(count + 1))
     top_points = driver.find_element(By.XPATH, top_player_points.format(count + 1))
+    top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
     top_pos = driver.find_element(By.XPATH, top_player_pos.format(count + 1))
     f.name = top_name.text
     f.points = top_points.text
+    f.proj = top_proj.text
     f.pos = top_pos.text 
 
 # Append player objects to starter list
@@ -188,12 +213,23 @@ starters.append(d)
 starter_names.append(k.name)
 starter_names.append(d.name)
 
-output = ''
-total_points = 0
-for player in starters:
-    total_points += float(player.points)
-    output = output + player.name + ' ' + player.pos + ' ' + str(player.points) + '\n'
-output = output + 'Total points: ' + str(total_points)
+if (Projection):
+    output = ''
+    total_points = 0
+    for player in starters:
+        # print(player.name)
+        # print(player.proj)
+        # print(type(player.proj))
+        total_points += float(player.proj)
+        output = output + player.name + ' ' + player.pos + ' ' + str(player.proj) + '\n'
+    output = output + 'Total projected points: ' + str(total_points)
+else:
+    output = ''
+    total_points = 0
+    for player in starters:
+        total_points += float(player.points)
+        output = output + player.name + ' ' + player.pos + ' ' + str(player.points) + '\n'
+    output = output + 'Total points: ' + str(total_points)
 
 print(output)
 
