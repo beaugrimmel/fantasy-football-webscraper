@@ -5,4 +5,4 @@
  
  Edit python script before using:
  1. Update path to where your chromedriver executable is saved.
- 2. Update username and password to sleeper.
+ 2. Update username and password to sleeper in a not included secrets.py file (keep in same directory as main).
