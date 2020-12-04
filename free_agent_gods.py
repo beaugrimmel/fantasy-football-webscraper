@@ -2,239 +2,142 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import WebDriverWait
+from tabulate import tabulate
+from secrets import username, password
 
 class Player():
     def __init__(self):
         self.name = ''
         self.points = ''
-        self.proj = ''
-        self.pos = ''
+        self.projection = ''
+        self.position = ''
+    
+    def __eq__(self, other):
+        return self.name==other.name
+    
+    def __hash__(self):
+        return hash(self.name)
 
-driver = webdriver.Chrome(executable_path='/Users/beaugrimmel/Documents/GitHub/fantasy-football-webscraper/chromedriver')
-driver.get('https://sleeper.app/login')
+class Webscraper():
+    def __init__(self, chromedriver_path):
+        self.chromedriver_path = chromedriver_path
+        self.driver = webdriver.Chrome(chromedriver_path)
+    
+    def end_scraper(self):
+        self.driver.quit()
 
-# Find and input username
-user_box = driver.find_element(By.XPATH, '//*[@id="landing"]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[1]/input')
-user_box.send_keys('<UserName>')
-user_box.send_keys(Keys.RETURN)
+    def goto_website(self, website_url):
+        self.driver.get(website_url)
 
-# Find and input password
-time.sleep(.25)
-password_box = driver.find_element(By.XPATH, '//*[@id="landing"]/div/div/div[2]/div/div[2]/div[2]/div[2]/div[1]/input')
-password_box.send_keys('<Password>')
-password_box.send_keys(Keys.RETURN)
+    def login(self, username, password):
+        user_box = self.driver.find_element_by_xpath('//*[@id="landing"]/div/div/div[2]/div/div[2]/div[2]/div[1]/div[1]/input')
+        user_box.send_keys(username)
+        user_box.send_keys(Keys.RETURN)
 
-# Select which league you want to look at
-# TODO
+        password_box = WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="landing"]/div/div/div[2]/div/div[2]/div[2]/div[2]/div[1]/input')))
+        password_box.send_keys(password)
+        password_box.send_keys(Keys.RETURN)
 
-# Click on leaders tab
-time.sleep(2)
-leaders_box = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[1]/a[3]')
-leaders_box.click()
+    def select_league(self):
+        pass # TODO Implement function to select league
 
-# Click on dropdown menu for weeks
-time.sleep(.25)
-week_dropdown = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[2]/div[2]/div[2]')
-week_dropdown.click()
+    def select_leaders_tab(self):
+        leaders_box = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[1]/a[3]')))
+        leaders_box.click()
 
-# Select the week your looking for
-time.sleep(.25)
-week = 13
-week_dropdown = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[2]/div[2]/div[2]/div[2]/div[{}]'.format(week + 1))
-week_dropdown.click()
+    def select_week(self, week):
+        week_dropdown = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[2]/div[2]/div[2]')))
+        week_dropdown.click()
 
-# Select Projection or Stats
-time.sleep(.25)
-Projection = True
-if Projection:
-    stat_type_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[1]/div[2]/div[{}]'.format(1))
-else:
-    stat_type_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[1]/div[2]/div[{}]'.format(2))
-stat_type_button.click()
+        week_number = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[2]/div[2]/div[2]/div[2]/div[{}]'.format(week + 1))))
+        week_number.click()
 
-# Hide owned players
-time.sleep(.25)
-hide_owned = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[2]/div[3]/div[2]')
-hide_owned.click()
+    def select_stat_type(self, type):
+        # TODO Look into why theres sometimes timeout issues
+        if type == 'Projection':
+            stat_num = 1
+        elif type == 'Stats':
+            stat_num = 2
+        else:
+            raise ValueError("Must enter Projection or Stats")
+        stat_type_button = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[1]/div[2]/div[{}]'.format(stat_num))))
+        stat_type_button.click()
 
-top_player_name =  '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[2]/div[2]/div[1]'
-top_player_points = '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[6]'
-top_player_proj = '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[5]'
-top_player_pos = '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[2]/div[3]/div[1]'
+    def hide_owned_players(self):
+        hide_owned = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[2]/div[3]/div[2]')))
+        hide_owned.click()
 
-# Select QB
-time.sleep(.25)
-qb_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[2]/div[2]/div/div[{}]'.format(2))
-qb_button.click()
+    def select_player_type(self, player_type):
+        switcher = {
+                'All':(1,-1),
+                'QB':(2,-1),
+                'RB':(3,-1),
+                'WR':(4,-1),
+                'TE':(5,-1),
+                'K':(6,-1),
+                'DEF':(7,-1),
+                'FLEX':(8,1),
+                'ROOKIE':(8,2)
+            }
+        type_num = switcher.get(player_type, 'Invalid player type')
 
-qb = Player()
+        player_type = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[2]/div[2]/div/div[{}]'.format(type_num[0]))))
+        player_type.click()
 
-top_name = driver.find_element(By.XPATH, top_player_name.format(1))
-top_points = driver.find_element(By.XPATH, top_player_points.format(1))
-top_proj = driver.find_element(By.XPATH, top_player_proj.format(1))
-top_pos = driver.find_element(By.XPATH, top_player_pos.format(1))
-qb.name = top_name.text
-qb.points = top_points.text
-qb.proj = top_proj.text
-qb.pos = top_pos.text
+        if type_num[0] == 8:
+            player_type_2 = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[2]/div[2]/div/div[8]/div/div/div[{}]'.format(type_num[1]))))
+            player_type_2.click()
 
-# Select RB
-time.sleep(.25)
-rb_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[2]/div[2]/div/div[{}]'.format(3))
-rb_button.click()
+    def get_top_x_player(self, rank):
+        player = Player()
+        player_name = WebDriverWait(self.driver, 3).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[2]/div[2]/div[1]'.format(rank))))
+        player_points = WebDriverWait(self.driver, 3).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[6]'.format(rank))))
+        player_projection = WebDriverWait(self.driver, 3).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[5]'.format(rank))))
+        player_position = WebDriverWait(self.driver, 3).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[5]/div/div[1]/div/div[1]/div/div/div[{}]/div/div[2]/div[3]/div[1]'.format(rank))))
+        player.name = player_name.text
+        player.points = player_points.text
+        player.projection = player_projection.text
+        player.position = player_position.text
+        return player
 
-rbs = []
-for x in range(2):
-    rbs.append(Player())
+    def make_list_top_players(self, playertype, top_x):
+        scraper.select_player_type(playertype)
+        players = []
+        for count in range(top_x):
+            players.append(scraper.get_top_x_player(rank=(count+1)))
+        return players
 
-for count,rb in enumerate(rbs):
-    top_name = driver.find_element(By.XPATH, top_player_name.format(count + 1))
-    top_points = driver.find_element(By.XPATH, top_player_points.format(count + 1))
-    top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
-    top_pos = driver.find_element(By.XPATH, top_player_pos.format(count + 1))
-    rb.name = top_name.text
-    rb.points = top_points.text
-    rb.proj = top_proj.text
-    rb.pos = top_pos.text
+if __name__ == "__main__":
+    scraper = Webscraper('/Users/beaugrimmel/Documents/GitHub/fantasy-football-webscraper/chromedriver')
+    scraper.goto_website('https://sleeper.app/login')
+    scraper.login(username, password)
+    scraper.select_leaders_tab()
+    scraper.select_week(week=12)
+    scraper.hide_owned_players()
+    scraper.select_stat_type(type='Stats')
 
-# Select WR
-time.sleep(.25)
-wr_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[2]/div[2]/div/div[{}]'.format(4))
-wr_button.click()
+    qb = scraper.make_list_top_players('QB', 1)
+    rb = scraper.make_list_top_players('RB', 2)
+    wr = scraper.make_list_top_players('WR', 2)
+    te = scraper.make_list_top_players('TE', 1)
+    flex = scraper.make_list_top_players('FLEX', 7)
+    k = scraper.make_list_top_players('K', 1)
+    d = scraper.make_list_top_players('DEF', 1)
+    starters = qb + rb + wr + te + flex + k + d
 
-wrs = []
-for x in range(2):
-    wrs.append(Player())
+    starters = list(dict.fromkeys(starters))
 
-for count,wr in enumerate(wrs):
-    top_name = driver.find_element(By.XPATH, top_player_name.format(count + 1))
-    top_points = driver.find_element(By.XPATH, top_player_points.format(count + 1))
-    top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
-    top_pos = driver.find_element(By.XPATH, top_player_pos.format(count + 1))
-    wr.name = top_name.text
-    wr.points = top_points.text
-    wr.proj = top_proj.text
-    wr.pos = top_pos.text 
-
-# Select TE
-time.sleep(.25)
-te_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[2]/div[2]/div/div[{}]'.format(5))
-te_button.click()
-
-te = Player()
-
-top_name = driver.find_element(By.XPATH, top_player_name.format(1))
-top_points = driver.find_element(By.XPATH, top_player_points.format(1))
-top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
-top_pos = driver.find_element(By.XPATH, top_player_pos.format(1))
-te.name = top_name.text
-te.points = top_points.text
-te.proj = top_proj.text
-te.pos = top_pos.text
-
-# Select K
-time.sleep(.25)
-k_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[2]/div[2]/div/div[{}]'.format(6))
-k_button.click()
-
-k = Player()
-
-top_name = driver.find_element(By.XPATH, top_player_name.format(1))
-top_points = driver.find_element(By.XPATH, top_player_points.format(1))
-top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
-top_pos = driver.find_element(By.XPATH, top_player_pos.format(1))
-k.name = top_name.text
-k.points = top_points.text
-k.proj = top_proj.text
-k.pos = top_pos.text
-
-# Select D
-time.sleep(.25)
-D_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[2]/div[2]/div/div[{}]'.format(7))
-D_button.click()
-
-d = Player()
-
-top_name = driver.find_element(By.XPATH, top_player_name.format(1))
-top_points = driver.find_element(By.XPATH, top_player_points.format(1))
-top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
-top_pos = driver.find_element(By.XPATH, top_player_pos.format(1))
-d.name = top_name.text
-d.points = top_points.text
-d.proj = top_proj.text
-d.pos = top_pos.text
-
-# Select Flex
-# Pull in top 7 flex players
-time.sleep(.25)
-more_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[2]/div[2]/div/div[{}]'.format(8))
-more_button.click()
-
-flex_button = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[3]/div/div[2]/div/div[3]/div[1]/div[2]/div[2]/div/div[8]/div/div/div[1]')
-flex_button.click()
-
-fs = []
-for x in range(7):
-    fs.append(Player())
-
-for count,f in enumerate(fs):
-    top_name = driver.find_element(By.XPATH, top_player_name.format(count + 1))
-    top_points = driver.find_element(By.XPATH, top_player_points.format(count + 1))
-    top_proj = driver.find_element(By.XPATH, top_player_proj.format(count + 1))
-    top_pos = driver.find_element(By.XPATH, top_player_pos.format(count + 1))
-    f.name = top_name.text
-    f.points = top_points.text
-    f.proj = top_proj.text
-    f.pos = top_pos.text 
-
-# Append player objects to starter list
-starters = []
-starters.append(qb)
-for rb in rbs:
-    starters.append(rb)
-for wr in wrs:
-    starters.append(wr)
-starters.append(te)
-
-# append those starters names to a list
-starter_names = []
-for starter in starters:
-    starter_names.append(starter.name)
-
-# Add the two correct flex players
-for flex in fs:
-    if (flex.name not in starter_names):
-        starters.append(flex)
-        starter_names.append(flex.name)
-
-# Add kicker and def
-starters.append(k)
-starters.append(d)
-starter_names.append(k.name)
-starter_names.append(d.name)
-
-if (Projection):
-    output = ''
+    # Print results nicely formatted
+    starters_print = []
     total_points = 0
-    for player in starters:
-        # print(player.name)
-        # print(player.proj)
-        # print(type(player.proj))
-        total_points += float(player.proj)
-        output = output + player.name + ' ' + player.pos + ' ' + str(player.proj) + '\n'
-    output = output + 'Total projected points: ' + str(total_points)
-else:
-    output = ''
-    total_points = 0
-    for player in starters:
-        total_points += float(player.points)
-        output = output + player.name + ' ' + player.pos + ' ' + str(player.points) + '\n'
-    output = output + 'Total points: ' + str(total_points)
+    for starter in starters:
+        starters_print.append([starter.name, starter.position, starter.points])
+        total_points += round(float(starter.points),2)
+    print(tabulate(starters_print, headers=['Name', 'Pos/Team', 'Points']))
+    print('Total points: {}'.format(total_points))
 
-print(output)
-
-# Some code for if you want to enter results into league chat
-# input_box = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div[1]/div[2]/div[2]/div[2]/div/div/div[2]/div[3]/div/div/textarea')
-# input_box.send_keys(output)
-
-driver.quit()
+    time.sleep(2.5)
+    scraper.end_scraper()
