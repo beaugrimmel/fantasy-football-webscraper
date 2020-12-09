@@ -115,7 +115,7 @@ if __name__ == "__main__":
     scraper.goto_website('https://sleeper.app/login')
     scraper.login(username, password)
     scraper.select_leaders_tab()
-    scraper.select_week(week=12)
+    scraper.select_week(week=13)
     scraper.hide_owned_players()
     scraper.select_stat_type(type='Stats')
 
@@ -126,9 +126,17 @@ if __name__ == "__main__":
     flex = scraper.make_list_top_players('FLEX', 7)
     k = scraper.make_list_top_players('K', 1)
     d = scraper.make_list_top_players('DEF', 1)
-    starters = qb + rb + wr + te + flex + k + d
+    starters = qb + rb + wr + te 
 
-    starters = list(dict.fromkeys(starters))
+    flexs_added = 0
+    for flex in flex:
+        if flexs_added == 2:
+            break
+        if flex not in starters:
+            starters.append(flex)
+            flexs_added += 1
+
+    starters = starters + k + d
 
     # Print results nicely formatted
     starters_print = []
@@ -137,7 +145,7 @@ if __name__ == "__main__":
         starters_print.append([starter.name, starter.position, starter.points])
         total_points += round(float(starter.points),2)
     print(tabulate(starters_print, headers=['Name', 'Pos/Team', 'Points']))
-    print('Total points: {}'.format(total_points))
+    print('Total points: {}'.format(round(total_points)))
 
-    time.sleep(2.5)
+    time.sleep(1)
     scraper.end_scraper()
